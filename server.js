@@ -41,6 +41,7 @@ const run = async (cmd, argsArray) => {
             return new Promise((resolve, reject) => {
                 child.on('exit', function(code){
                     try { 
+                        console.log(JSON.stringify(child))
                         if (code === 0) resolve(true)
                     } catch (error) {
                         let err = new Error(`command ${cmd} exited with wrong status code ${code} and error message: ${error.message}`);
@@ -68,8 +69,8 @@ const run = async (cmd, argsArray) => {
 const server = http.createServer( async (req, res) => {
     res.writeHead(200, {'Content-Type': 'application/json'});
     //execute .bat in async way
-    let success = osType !== 'win32' ? await run('bash', args) : new Error(`shell command is not compatible \n`);
-    let msg = 'batch success: ' + success;
+    let success = osType !== 'win32' ? await run('bash', args) : new Error(`shell command is not compatible with the platform`);
+    let msg = 'batch success: ' + JSON.stringify(success);
 
     res.end(msg + '\\n'); console.log(msg);
 
