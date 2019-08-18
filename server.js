@@ -1,6 +1,6 @@
 'use strict';
 
-const app = require('express')()
+const http = require('http')
     , { platform } = require('os')
     , osType = platform()
 // The path to the .bat files
@@ -8,10 +8,11 @@ const app = require('express')()
 // On Windows Only ...
     , { exec } = require('child_process');
 
-const port = process.env.PORT || 8080;
-let argsArray = [`${batches}/install.bat`, `${batches}/test.bat`, `${batches}/reset.bat`]
+const port = process.env.PORT || 8080
+    , MAX_CHILDREN = 3
+    , argsArray = [`${batches}/install.bat`, `${batches}/test.bat`, `${batches}/reset.bat`];
 
-const run = function(cmd, argsArray) {
+const run = async (cmd, argsArray) => {
     // exec all scripts spaces/separated by each .bat filename:
     const spawn = require('child_process').spawn;
     const children = spawn(cmd, [
@@ -22,15 +23,35 @@ const run = function(cmd, argsArray) {
     // or: need to set some timeout between each .bat file
     // use spawn to retreive huge binary data to Node and avoid Buffer Error: maxBuffer exceeded
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
 
         let buffer = Buffer.from(); //initialize buffer
-        exec(children, (error, stdout, stderr) => {
-            // TODO
-            if (error) { return reject(error) }
-            return resolve({ stdout, stderr })
-        });
+        let resps = children.map(child => {
+            return new Promise((resolve, reject) => {
+                child.on('exit', function(code){
+                    if (code === 0) resolve(true)
+                    reject(false)
+                })
+            })
+        })
+
+        resps = await Promise.all(resps)
+
+        if (resps.filter(Boolean).length === MAX_CHILDREN ) {
+            console.log(`success!`)
+        } else console.log(`failures.`)
+
+        await delay(500);
     })
 }
 
-app.listen(port, () => console.log(`App listening on port ${port}!`))
+const server = http.createServer( async (req, res) => {
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    //execute .bat in async way
+    const success = await run('start');
+    let msg = 'batch success: ' + success;
+
+    res.end(msg + '\\n'); console.log(msg);
+
+}).listen(port, `127.0.0.1`);
+console.log(`Server running at http://127.0.0.1:${port}/`);
