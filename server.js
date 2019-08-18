@@ -8,21 +8,21 @@ const http = require('http')
     , { platform } = require('os')
     , osType = platform()
 // The path to the .bat files
-    , batches = require('path').resolve(__dirname)
+    , path = require('path').resolve(__dirname)
 // On Windows Only ...
     , { exec } = require('child_process');
 
 const port = process.env.PORT || 8080
     , MAX_CHILDREN = 3
-    , argsArray = [`${batches}/install.bat`, `${batches}/test.bat`, `${batches}/reset.bat`];
+    , args = [`${path}/batches/install.bat`, `${path}/batches/test.bat`, `${path}/batches/reset.bat`];
 
-const run = async (cmd) => {
+const run = async (cmd, argsArray) => {
     // exec all scripts spaces/separated by each .bat filename:
     const spawn = require('child_process').spawn;
     const excluded = spawn(cmd, [
-    '-o', `${batches}/install.bat`,
-    '-o', `${batches}/test.bat`,
-    '-o', `${batches}/reset.bat`
+    '-o', `${path}/batches/install.bat`,
+    '-o', `${path}/batches/test.bat`,
+    '-o', `${path}/batches/reset.bat`
     ], { shell: true });//convert from stream to buffer);
     // use spawn to retreive huge binary data to Node and avoid Buffer Error: maxBuffer exceeded
     
@@ -30,11 +30,13 @@ const run = async (cmd) => {
         
         //initialize stream batch
         process.stdout.write(`Sending ${MAX_CHILDREN} requests...`)
-
+        // console.log(`${path}/batches/install.bat`)
         let children = []
-        for (let index = 0; index < MAX_CHILDREN; index++) {
-            children.push(spawn(cmd, [`${batches}/install.bat`], { shell: true }))
-        }
+
+        argsArray.forEach(child => {
+            children.push(spawn(cmd, [child], { shell: true }))
+        })
+
         let resps = children.map(child => {
             return new Promise((resolve, reject) => {
                 child.on('exit', function(code){
@@ -66,7 +68,7 @@ const run = async (cmd) => {
 const server = http.createServer( async (req, res) => {
     res.writeHead(200, {'Content-Type': 'application/json'});
     //execute .bat in async way
-    let success = osType !== 'win32' ? await run('start') : new Error(`shell command is not compatible \n`);
+    let success = osType !== 'win32' ? await run('bash', args) : new Error(`shell command is not compatible \n`);
     let msg = 'batch success: ' + success;
 
     res.end(msg + '\\n'); console.log(msg);
