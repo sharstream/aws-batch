@@ -1,3 +1,10 @@
+'use strict'
+
+/**
+ * 
+ * @param {Object} query pass request query paramters to parse to api gateway
+ * @return {Object} return another object with the expected output 
+ */
 const getIsolineMode = (query) => {
 
     const query = {
