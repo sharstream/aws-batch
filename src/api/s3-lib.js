@@ -4,6 +4,8 @@
 const S3 = require('aws-sdk/clients/s3');
 const s3 = new S3();
 const API_VERSION = process.env.API_VERSION;
+const utils = require('./utils')
+
 /**
  * {Promise} resolve function
  */

@@ -1,20 +1,21 @@
 'use strict'
 
 /**
- * 
+ * @desc get isoline params transform to recieve through api gateway
  * @param {Object} query pass request query paramters to parse to api gateway
  * @return {Object} return another object with the expected output 
  */
 const getIsolineMode = (query) => {
 
-    const query = {
-        "car": "",
-        "mode": "fastest",
-        "range": "1800",
-        "rangetype": "time",
-        "start": "geo!33.83752,-84.3757399",
-        "traffic:enabled": ""
-    }
+    // testing
+    // const query = {
+    //     "car": "",
+    //     "mode": "fastest",
+    //     "range": "1800",
+    //     "rangetype": "time",
+    //     "start": "geo!33.83752,-84.3757399",
+    //     "traffic:enabled": ""
+    // }
     
     const arr = Object.entries(query)
     let setMode = "";
@@ -30,10 +31,17 @@ const getIsolineMode = (query) => {
             aggMode = query[key]
             aggMode = aggMode.concat('', setMode)
         }
-        key === "mode" ? obj[key] = aggMode : query[key] !== '' ? obj[key] = query[key] : null
+
+        key === "mode" ? 
+        obj[key] = aggMode : query[key] !== '' ? 
+        obj[key] = query[key] : 
+        null
+
         return obj
     }, {})
     
     console.log(isolineObj)
     return isolineObj
 }
+
+module.exports = { getIsolineMode }

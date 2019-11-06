@@ -10,7 +10,7 @@ let DEFAULT = 9670;
 let testStepId = 20081;
 
 /**
- * Return JSON object from a list of objects
+ * @desc Return JSON object from a list of objects
  * @param {Array<Object>} list list of objects
  */
 const convertToJSON = list => {
@@ -27,7 +27,7 @@ const convertToJSON = list => {
 }
 
 /**
- * Return a Function Object to  setVariable from Kaiju
+ * @desc Return a Function Object to  setVariable from Kaiju
  * @param {Object} beforeStep before step executed
  */
 const updateFunctionObject = beforeStep => {
@@ -41,7 +41,7 @@ const updateFunctionObject = beforeStep => {
     return beforeStep;
 }
 /**
- * Get and transform the current data from postman into kaiju json format
+ * @desc Get and transform the current data from postman into kaiju json format
  * @param {Object} currentStep transform the current step into the kaiju json format
  * @param {Object} currentData current data comming from postman collections 
  */
@@ -107,7 +107,7 @@ const getStepPerRequest = (currentStep, currentData) => {
 }
 
 /**
- * Retrieve and convert to kaiju json format
+ * @desc Retrieve and convert to kaiju json format
  * @param {File} files json postman collection files
  */
 const exportJSON = files => {
@@ -197,11 +197,13 @@ const exportJSON = files => {
 
                     collections.forEach(data => {
 
-                        //TODO to include encoding url
+                        /**
+                         * @desc Generate based url using encoding
+                         */
                         const generateUrl = data => {
 
-                            // let url = encodeURIComponent(data.request.url.raw.replace(regex, base_url))
-                            let url = data.request.url.raw.replace(regex, base_url);
+                            let url = decodeURI(data.request.url.raw.replace(regex, base_url))
+                            // let url = data.request.url.raw.replace(regex, base_url);
                             if(url.indexOf('{{jobid}}') > -1) {
                                 url = url.replace(/{{jobid}}/gi, '<jobid>')
                             }
@@ -235,12 +237,19 @@ const exportJSON = files => {
 
                     })
 
+                    const result = [];
+
                     if (kaiju.testSteps.length) {
                         kaiju.numSteps = kaiju.testSteps.length
                         fs.writeFile(`./saved/${server}`, JSON.stringify(kaiju), 'utf8', (err, data) => {
                             if (err) throw err;
+                            result.push(data);
                             console.log('Results Received');
                         });
+                    }
+
+                    if (!result) {
+                        return result;
                     }
                 }
             });
