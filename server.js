@@ -10,7 +10,8 @@ const http = require('http')
 // The path to the .bat files
     , path = require('path').resolve(__dirname)
 // On Windows Only ...
-    , { exec } = require('child_process');
+    , { exec } = require('child_process')
+    , { _init } = require('./src/api/secrets_ssm');
 
 const port = process.env.PORT || 8080
     , MAX_CHILDREN = 3
@@ -66,7 +67,13 @@ const run = async (cmd, argsArray) => {
     })
 }
 
+// retrieving...secrets manager
 const server = http.createServer( async (req, res) => {
+
+    if(!process.env.db_username || process.env.db_password || process.env.conn_string) {
+        await _init();
+    }
+
     res.writeHead(200, {'Content-Type': 'application/json'});
     //execute .bat in async way
     let success = osType !== 'win32' ? await run('bash', args) : new Error(`shell command is not compatible with the platform`);
