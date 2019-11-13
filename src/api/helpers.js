@@ -1,5 +1,7 @@
 'use strict'
 
+const request = require('request-promise')
+
 /**
  * @desc get isoline params transform to recieve through api gateway
  * @param {Object} query pass request query paramters to parse to api gateway
@@ -44,4 +46,41 @@ const getIsolineMode = (query) => {
     return isolineObj
 }
 
-module.exports = { getIsolineMode }
+/**
+ * @desc submit batch of json files to s3 object storage
+ * @param {Array<JSON>} files files saved from s3 object storage
+ * @param {String} action GET, POST or POST
+ */
+const sendData = async (files, action) => {
+    try {
+
+        // TODO needs to pass credentials encrypted and auth middleware
+        const respBody = {
+            'owner': {
+                'email': 'test@domain.com'
+            },
+            'name': 'Synthetic Tests',
+            'frecuency': 60,
+            'testSteps': files
+        }
+
+        const options = {
+            uri: 'https://kaiju.data.sfdc.net/synthetics/api/testcases',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            method: action,
+            body: respBody,
+            timeout: 5000,
+            json: true
+        }
+
+        const response = await request(options);
+        
+        return response;
+    } catch (error) {
+        throw error;//decide if the error is ignored or stops batch processing
+    }
+}
+
+module.exports = { getIsolineMode, sendData }

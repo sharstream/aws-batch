@@ -1,6 +1,6 @@
 'use strict';
 
-let s3Object = require('../app.js');
+let s3Object = require('../app.js.js');
 jest.mock('../app');
 
 jest.fn().mockImplementation(() => Promise.resolve(value));
