@@ -52,9 +52,9 @@ module.exports = class SecretManager {
     
             } catch (error) {
 
-                const errorHandler = loggedError(error)
+                const typeError = loggedError(error)
                 
-                reject(new Error(`Message was intercepted as an error type: ${errorHandler}`));
+                reject(new Error(`Message was intercepted as an error type: ${typeError}`));
     
             }
         })
@@ -115,7 +115,34 @@ module.exports = class SecretManager {
         })
     }
 
-    loggedError(err) {
+    /**
+     * @desc getting secret value from Secret Manger Parameter Store
+     * SecretString: parameter contains string data
+     * SecretBinary: parameter contains binary data
+     * @param {String} secret pass a SecretId to retrieve a secret value
+     */
+    async getSecretValue (secret) {
+        return new Promise((resolve, reject) => {
+
+            this.secretsmanager.getSecretValue({ SecretId: secret }, (err, data) => {
+
+                if(err) {
+                    const typeError = errorHandler(err);
+                    reject(typeError);
+                }
+                else {
+                    if('SecretString' in data) {
+                        resolve(JSON.parse(data.SecretString));
+                    }
+                    else (
+                        resolve(Buffer.from(data.SecretBinary, 'utf-8'))
+                    )
+                }
+            })
+        })
+    }
+
+    errorHandler(err) {
 
         let error = '';
 
