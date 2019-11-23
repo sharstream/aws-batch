@@ -19,7 +19,7 @@ module.exports = class SecretManager {
             this.region = region, 
             AWS.config.AWS_REGION_ENV = region;
 
-        this.secrets = ['secret_db_username', 'secret_pwd', 'secret_conn_string'];
+        this.secrets = ['secret_db_username', 'secret_db_pwd', 'secret_db_conn_string'];
         this.secretsmanager = new AWS.SecretsManager({
             region: this.region
         });
@@ -27,7 +27,7 @@ module.exports = class SecretManager {
     
     async _init() {
 
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
     
             try {
                 
@@ -52,7 +52,7 @@ module.exports = class SecretManager {
     
             } catch (error) {
 
-                const typeError = loggedError(error)
+                const typeError = this.errorHandler(error)
                 
                 reject(new Error(`Message was intercepted as an error type: ${typeError}`));
     

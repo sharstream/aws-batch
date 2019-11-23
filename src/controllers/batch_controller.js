@@ -2,20 +2,14 @@
 
 const util = require('util')
     , delay = util.promisify(setTimeout)
-    , { platform } = require('os')
-    , osType = platform()
 // The path to the .bat files
-    , path = require('path').resolve(__dirname)
+    
 // On Windows Only ...
-    , { exec } = require('child_process')
 
-const MAX_CHILDREN = 3
-    , args = [`${path}/batches/install.bat`, `${path}/batches/test.bat`, `${path}/batches/reset.bat`];
+const MAX_CHILDREN = 3;
 
 // set default batchJob status globally
 global.batchStatus = global.batchStatus !== undefined ? global.batchStatus : 'None';
-
-module.exports = { _run, getStatus, startTest, savedJSON }
 
 const getStatus = () => {
     return new Promise((resolve, reject) => {
@@ -143,3 +137,5 @@ const _run = async (cmd, argsArray) => {
         await delay(500);
     })
 }
+
+module.exports = { _run, getStatus, startTest }

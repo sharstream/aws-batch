@@ -1,5 +1,4 @@
 const fs = require('fs'),
-    dir = __dirname + '/postman/',
     base_url = 'https://test.com',
     uuid = require('uuid/v4');
 //define environments var as -> internal.${environment}.sfmapsapi
@@ -185,77 +184,70 @@ const exportJSON = files => {
                 }
             }
 
-            const obj = newObj.data;
-            Object.keys(obj).forEach(key => {
-                console.log('each key', key);
+            const obj = newObj.item;
+            obj.forEach(data => {
+                console.log('each key', data);
 
-                if (key === "item") {
-                    const collections = obj[key];
-                    console.log(key + ": " + newObj[key]);
+                testStepId += testStepId + 1;
 
-                    testStepId += testStepId + 1;
+                /**
+                 * @desc Generate based url using encoding
+                 */
+                const generateUrl = data => {
 
-                    collections.forEach(data => {
-
-                        /**
-                         * @desc Generate based url using encoding
-                         */
-                        const generateUrl = data => {
-
-                            let url = decodeURI(data.request.url.raw.replace(regex, base_url))
-                            // let url = data.request.url.raw.replace(regex, base_url);
-                            if(url.indexOf('{{jobid}}') > -1) {
-                                url = url.replace(/{{jobid}}/gi, '<jobid>')
-                            }
-
-                            return url;
-                        }
-
-                        const step = {
-                            // testStepId: testStepId,
-                            stepType: "API",
-                            timeout: 60,
-                            softFailureEnabled: false,
-                            retryOnFailure: false,
-                            retryTest: false,
-                            description: data.name,
-                            testUrl: generateUrl(data),
-                            expectedResponseCode: 200,
-                            section: "core",
-                            httpMethod: data.request.method,
-                            headers: {
-                                orgid: "testing",
-                                "Content-Type": "application/json"
-                            }
-                        }
-
-                        const beforeStep = getStepPerRequest(step, data);
-
-                        const afterStep = updateFunctionObject(beforeStep);
-
-                        kaiju.testSteps.push(afterStep);
-
-                    })
-
-                    const result = [];
-
-                    if (kaiju.testSteps.length) {
-                        kaiju.numSteps = kaiju.testSteps.length
-                        fs.writeFile(`./saved/${server}`, JSON.stringify(kaiju), 'utf8', (err, data) => {
-                            if (err) throw err;
-                            result.push(data);
-                            console.log('Results Received');
-                        });
+                    let url = decodeURI(data.request.url.raw.replace(regex, base_url))
+                    // let url = data.request.url.raw.replace(regex, base_url);
+                    if(url.indexOf('{{jobid}}') > -1) {
+                        url = url.replace(/{{jobid}}/gi, '<jobid>')
                     }
 
-                    if (!result) {
-                        return result;
+                    return url;
+                }
+
+                const step = {
+                    // testStepId: testStepId,
+                    stepType: "API",
+                    timeout: 60,
+                    softFailureEnabled: false,
+                    retryOnFailure: false,
+                    retryTest: false,
+                    description: data.name,
+                    testUrl: generateUrl(data),
+                    expectedResponseCode: 200,
+                    section: "core",
+                    httpMethod: data.request.method,
+                    headers: {
+                        orgid: "testing",
+                        "Content-Type": "application/json"
                     }
                 }
+
+                const beforeStep = getStepPerRequest(step, data);
+
+                const afterStep = updateFunctionObject(beforeStep);
+
+                kaiju.testSteps.push(afterStep);
+
+                // const result = [];
+
+                // if (kaiju.testSteps.length) {
+                //     kaiju.numSteps = kaiju.testSteps.length
+                //     fs.writeFile(`./saved/${server}`, JSON.stringify(kaiju), 'utf8', (err, data) => {
+                //         if (err) throw err;
+                //         result.push(data);
+                //         console.log('Results Received');
+                //     });
+                // }
+                
             });
 
+            if (kaiju) {
+                return kaiju;
+            }
+            return {};
+
         } catch (err) {
-            console.error(err)
+            throw err
         }
     });
 }
