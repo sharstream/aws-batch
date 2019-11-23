@@ -2,6 +2,16 @@
 
 const Pool = require('pg').Pool;
 const SecretManager = require('./secret-lib');
+const {getParameter} = require('./ssmParameterStore');
+
+const getDb = () => getParameter('db_password')
+    .then(password => new Pool({
+        host: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT),
+        database: process.env.DB_DATABASE,
+        user: process.env.DB_USER,
+        password,
+    }));
 
 const query = async (queryObject) => {
     const secretManager = new SecretManager('us-west-2');
@@ -31,4 +41,17 @@ const query = async (queryObject) => {
     })
 }
 
-module.exports = { query }
+const dbMiddleware = () => ({
+    before: handler => getDb().then(db => {
+        handler.context.db = db;
+    }),
+    after: handler => {
+        handler.context.db.$pool.end();
+    },
+    onError: handler => {
+        handler.context.db.$pool.end();
+        throw handler.error;
+    },
+})
+
+module.exports = { query, getDb, dbMiddleware }
