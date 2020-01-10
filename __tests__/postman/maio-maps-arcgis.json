@@ -1,0 +1,402 @@
+{
+	"info": {
+		"_postman_id": "382b8707-7e7b-4520-bd05-d5d9afdff17f",
+		"name": "Maio Maps Arcgis - Happy",
+		"description": "Version 1",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "200 Log in",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c8c2d24c-fb5f-47b6-8014-3e84b771f9a0",
+						"exec": [
+							"var schema_data = {",
+							" \"token\": \"string\",",
+							" \"token_type\": \"Bearer\"",
+							"};",
+							"",
+							"pm.test(\"response is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 10000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(10000);",
+							"});",
+							"",
+							"pm.test(\"response does not have error\", function(){",
+							"    pm.response.to.not.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"pm.test(\"response contains needed data\", function(){",
+							"    pm.expect(tv4.validate(jsonData.data, schema_data)).to.be.true;",
+							"});",
+							"",
+							"var auth_token = `${jsonData.data.token_type} ${jsonData.data.token}`;",
+							"pm.globals.set(\"auth_token\", auth_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"type": "text",
+						"value": "{{api_key}}"
+					},
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "orgid",
+						"type": "text",
+						"value": "testing"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"client_secret\": \"iuitit7t7t7tyferugehvbjfwehu3girebjknefh4u35rjnefbhrjnefhu345berjn4h5nrh43uq5bre\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/login/v1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"login",
+						"v1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{base_url}}/arcgis/reprojection/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "57b3ef8a-f720-4b90-9b2e-a404235ecf43",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is correct\", function () {",
+							"    responseTime <= pm.environment.get(\"time_limit\");",
+							"});",
+							"",
+							"",
+							"const responseSchema = {",
+							"    \"properties\": {",
+							"        \"coordinates\": {",
+							"            \"type\": \"array\"",
+							"        }",
+							"    }",
+							"};",
+							"",
+							"const jsonResponse = pm.response.json()",
+							"",
+							"pm.test(\"Correct schema is returned\", function(){",
+							"    const valid = tv4.validate(jsonResponse, responseSchema, false, true);",
+							"    pm.expect(valid).to.be.true;",
+							"    pm.expect(jsonResponse.coordinates).to.have.lengthOf(2);",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "application/gzip"
+					},
+					{
+						"key": "Authorization",
+						"value": "{{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "orgid",
+						"value": "testing",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \r\n    \"spatialReferenceFrom\": {\r\n        \"latestWkid\": 4153,\r\n        \"wkid\": 4153\r\n    },\r\n    \"spatialReferenceTo\": {\r\n        \"latestWkid\": 4522,\r\n        \"wkid\": 4522\r\n    },\r\n   \"coordinates\":[-88.28166,42.0225]\r\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/arcgis/reprojection/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"arcgis",
+						"reprojection",
+						"1"
+					]
+				},
+				"description": "Happy path"
+			},
+			"response": []
+		},
+		{
+			"name": "{{base_url}}/arcgis/reprojection/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b0e1e43d-8f58-4aa4-9b09-fbc532464777",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is correct\", function () {",
+							"    responseTime <= pm.environment.get(\"time_limit\");",
+							"});",
+							"",
+							"pm.test(\"Response.message is correct\", function () {",
+							"    var jsonData = pm.response.json();",
+							"});",
+							"",
+							"const responseSchema = {",
+							"    \"properties\": {",
+							"        \"coordinates\": {",
+							"            \"type\": \"array\"",
+							"        }",
+							"    }",
+							"};",
+							"",
+							"const jsonResponse = pm.response.json()",
+							"",
+							"pm.test(\"Correct schema is returned\", function(){",
+							"    const valid = tv4.validate(jsonResponse, responseSchema, false, true);",
+							"    pm.expect(valid).to.be.true;",
+							"    pm.expect(jsonResponse.coordinates).to.have.lengthOf(2);",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "application/gzip"
+					},
+					{
+						"key": "Authorization",
+						"value": "{{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "orgid",
+						"value": "testing",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \r\n    \"spatialReferenceFrom\": {\r\n\r\n        \"wkid\": 4153\r\n    },\r\n    \"spatialReferenceTo\": {\r\n        \"latestWkid\": 4522,\r\n        \"wkid\": 4522\r\n    },\r\n   \"coordinates\":[-88.28166,42.0225]\r\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/arcgis/reprojection/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"arcgis",
+						"reprojection",
+						"1"
+					]
+				},
+				"description": "NO \"spatialReferenceFrom\" - \"latestWkid\" - 200"
+			},
+			"response": []
+		},
+		{
+			"name": "{{base_url}}/arcgis/reprojection/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "551ee7ea-335b-4e4d-9fdf-1c686faed10f",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is correct\", function () {",
+							"    responseTime <= pm.environment.get(\"time_limit\");",
+							"});",
+							"",
+							"const responseSchema = {",
+							"    \"properties\": {",
+							"        \"coordinates\": {",
+							"            \"type\": \"array\"",
+							"        }",
+							"    }",
+							"};",
+							"",
+							"const jsonResponse = pm.response.json()",
+							"",
+							"pm.test(\"Correct schema is returned\", function(){",
+							"    const valid = tv4.validate(jsonResponse, responseSchema, false, true);",
+							"    pm.expect(valid).to.be.true;",
+							"    pm.expect(jsonResponse.coordinates).to.have.lengthOf(2);",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "application/gzip"
+					},
+					{
+						"key": "Authorization",
+						"value": "{{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "orgid",
+						"value": "testing",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \r\n    \"spatialReferenceFrom\": {\r\n        \"latestWkid\": 4153,\r\n        \"wkid\": 4153\r\n    },\r\n    \"spatialReferenceTo\": {\r\n\r\n        \"wkid\": 4522\r\n    },\r\n   \"coordinates\":[-88.28166,42.0225]\r\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/arcgis/reprojection/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"arcgis",
+						"reprojection",
+						"1"
+					]
+				},
+				"description": "NO \"spatialReferenceTo\" - \"latestWkid\" - 200"
+			},
+			"response": []
+		},
+		{
+			"name": "{{base_url}}/arcgis/reprojection/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a93655cb-458e-437e-8445-03a7aa5c68ff",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is correct\", function () {",
+							"    responseTime <= pm.environment.get(\"time_limit\");",
+							"});",
+							"",
+							"pm.test(\"Response.message is correct\", function () {",
+							"    var jsonData = pm.response.json();",
+							"});",
+							"",
+							"const responseSchema = {",
+							"    \"properties\": {",
+							"        \"coordinates\": {",
+							"            \"type\": \"array\"",
+							"        }",
+							"    }",
+							"};",
+							"",
+							"const jsonResponse = pm.response.json()",
+							"",
+							"pm.test(\"Correct schema is returned\", function(){",
+							"    const valid = tv4.validate(jsonResponse, responseSchema, false, true);",
+							"    pm.expect(valid).to.be.true;",
+							"    pm.expect(jsonResponse.coordinates).to.have.lengthOf(2);",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "application/gzip"
+					},
+					{
+						"key": "Authorization",
+						"value": "{{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "orgid",
+						"value": "testing",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \r\n    \"spatialReferenceFrom\": {\r\n        \"latestWkid\": 4153,\r\n        \"wkid\": 4153\r\n    },\r\n    \"spatialReferenceTo\": {\r\n        \"latestWkid\": 4522\r\n\r\n    },\r\n   \"coordinates\":[-88.28166,42.0225]\r\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/arcgis/reprojection/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"arcgis",
+						"reprojection",
+						"1"
+					]
+				},
+				"description": "NO \"spatialReferenceTo\" - \"wkid\" - 200"
+			},
+			"response": []
+		}
+	]
+}

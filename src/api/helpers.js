@@ -51,7 +51,7 @@ const getIsolineMode = (query) => {
  * @param {Array<JSON>} files files saved from s3 object storage
  * @param {String} action GET, POST or POST
  */
-const sendData = async (files, action) => {
+const sendData = async (raw, opts) => {
     try {
 
         // TODO needs to pass credentials encrypted and auth middleware

@@ -3,6 +3,7 @@
 const Pool = require('pg').Pool;
 const SecretManager = require('./secret-lib');
 const {getParameter} = require('./ssmParameterStore');
+const AWSXRay = AWSXRay.captureAWS(require('aws-xray-sdk'));
 
 const getDb = () => getParameter('db_password')
     .then(password => new Pool({
@@ -41,6 +42,35 @@ const query = async (queryObject) => {
     })
 }
 
+const xrayedQuery = (queryObject, fId, traceId) => {
+
+    return new Promise((resolve, reject) => {
+
+        let segment = AWSXRay.getSegment();
+    
+        if(!fId) {
+            fId = (subsegment) => {
+                subsegment.addMetadata('postgres query')
+                subsegment.addNotation('queryObject')
+    
+                try {     
+                    subsegment.close()
+                    return resolve(query(queryObject));
+                } catch (error) {
+                    subsegment.close(err)
+                    return reject(err)
+                }       
+            }
+
+            AWSXRay.captureAsyncFunction('Unknown XRay Function', fId, segment)
+        } else if(!traceId) {
+            traceId = 'UnknownTraceIdXRay'
+            AWSXRay.captureAsyncFunction('Unknown XRay Trace', traceId)
+        }
+
+    })
+}
+
 const dbMiddleware = () => ({
     before: handler => getDb().then(db => {
         handler.context.db = db;
@@ -54,4 +84,4 @@ const dbMiddleware = () => ({
     },
 })
 
-module.exports = { query, getDb, dbMiddleware }
+module.exports = { query, xrayedQuery, getDb, dbMiddleware }
